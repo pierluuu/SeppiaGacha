@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gacha</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111;
+    color: #fff;
+    font-family: sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 32px 16px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .strip-wrapper {
+    width: 100%;
+    max-width: 700px;
+    height: 120px;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 0.5px solid #333;
+    position: relative;
+    background: #1a1a1a;
+  }
+
+  .strip-mask-left, .strip-mask-right {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 100px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .strip-mask-left  { left: 0;  background: linear-gradient(to right, #111, transparent); }
+  .strip-mask-right { right: 0; background: linear-gradient(to left,  #111, transparent); }
+
+  .strip-center-indicator {
+    position: absolute;
+    top: 8px; bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 108px;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 8px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .strip-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    position: absolute;
+    left: 0; top: 0;
+    will-change: transform;
+  }
+
+  .strip-segment {
+    width: 104px;
+    height: 100px;
+    margin: 0 2px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .spin-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 14px 56px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .spin-btn:hover  { opacity: 0.85; }
+  .spin-btn:active { transform: scale(0.97); }
+  .spin-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+
+  /* Popup */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .popup-overlay.visible { display: flex; }
+
+  /* Sfondo colorato rarità */
+  .popup-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .popup-overlay.visible .popup-bg { opacity: 1; }
+
+  /* Speed lines canvas */
+  .popup-lines {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+  }
+
+  /* Card popup */
+  .popup-card {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  .popup-rarity-badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 20px;
+    border-radius: 20px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .popup-image-wrap {
+    width: 260px;
+    height: 260px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: zoomIn 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.1s both;
+  }
+
+  @keyframes zoomIn {
+    from { transform: scale(0.75); }
+    to   { transform: scale(1); }
+  }
+
+  .popup-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .popup-filename {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+  }
+
+  .popup-close {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: 0.5px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    padding: 10px 36px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .popup-close:hover { background: rgba(255,255,255,0.22); }
+</style>
+</head>
+<body>
+
+<h1>Gacha</h1>
+
+<div class="strip-wrapper">
+  <div class="strip-mask-left"></div>
+  <div class="strip-mask-right"></div>
+  <div class="strip-center-indicator"></div>
+  <div class="strip-track" id="stripTrack"></div>
+</div>
+
+<button class="spin-btn" id="spinBtn" onclick="startSpin()">Spin</button>
+
+<div class="popup-overlay" id="popup">
+  <div class="popup-bg" id="popupBg"></div>
+  <canvas class="popup-lines" id="linesCanvas"></canvas>
+  <div class="popup-card">
+    <div class="popup-rarity-badge" id="popupBadge"></div>
+    <div class="popup-image-wrap">
+      <img class="popup-image" id="popupImg" src="" alt="risultato">
+    </div>
+    <div class="popup-filename" id="popupName"></div>
+    <button class="popup-close" onclick="closePopup()">Chiudi</button>
+  </div>
+</div>
+
+<script>
+const RARITIES = [
+  { id: 'common',    label: 'Comune',      weight: 60, bg: '#3a3a3a', color: '#cccccc', glowColor: '#888888', badgeBg: 'rgba(80,80,80,0.7)',   badgeColor: '#ccc' },
+  { id: 'rare',      label: 'Raro',        weight: 25, bg: '#0c447c', color: '#85b7eb', glowColor: '#378add', badgeBg: 'rgba(12,68,124,0.7)',  badgeColor: '#85b7eb' },
+  { id: 'epic',      label: 'Epico',       weight: 12, bg: '#3c3489', color: '#afa9ec', glowColor: '#7f77dd', badgeBg: 'rgba(60,52,137,0.7)', badgeColor: '#afa9ec' },
+  { id: 'legendary', label: 'Leggendario', weight: 3,  bg: '#633806', color: '#fac775', glowColor: '#ef9f27', badgeBg: 'rgba(99,56,6,0.7)',   badgeColor: '#fac775' },
+];
+
+const STRIP_LENGTH = 40;
+const WINNER_POS   = 20;
+const SEGMENT_W    = 104;
+const SEGMENT_GAP  = 4;
+const STRIP_TOTAL  = SEGMENT_W + SEGMENT_GAP;
+
+let imagesData = { common: [], rare: [], epic: [], legendary: [] };
+let isSpinning = false;
+let linesAngle = 0;
+let linesSpeed = 0;
+let linesRAF = null;
+
+async function loadImages() {
+  try {
+    const res = await fetch('images.json');
+    const data = await res.json();
+    imagesData = data;
+  } catch(e) {
+    console.warn('images.json non trovato, uso placeholder.');
+    imagesData = {
+      common:    ['placeholder'],
+      rare:      ['placeholder'],
+      epic:      ['placeholder'],
+      legendary: ['placeholder'],
+    };
+  }
+}
+
+function weightedRandom() {
+  const total = RARITIES.reduce((s, r) => s + r.weight, 0);
+  let rand = Math.random() * total;
+  for (const r of RARITIES) {
+    rand -= r.weight;
+    if (rand <= 0) return r;
+  }
+  return RARITIES[0];
+}
+
+function buildStrip(winnerId) {
+  const track = document.getElementById('stripTrack');
+  track.innerHTML = '';
+  const totalW = RARITIES.reduce((s, r) => s + r.weight, 0);
+  const sequence = [];
+
+  for (let i = 0; i < STRIP_LENGTH; i++) {
+    let rand = Math.random() * totalW;
+    let chosen = RARITIES[0];
+    for (const r of RARITIES) { rand -= r.weight; if (rand <= 0) { chosen = r; break; } }
+    sequence.push(chosen);
+  }
+  sequence[WINNER_POS] = RARITIES.find(r => r.id === winnerId);
+
+  sequence.forEach(r => {
+    const seg = document.createElement('div');
+    seg.className = 'strip-segment';
+    seg.style.background = r.bg;
+    seg.style.color = r.color;
+    seg.textContent = r.label;
+    track.appendChild(seg);
+  });
+
+  return sequence;
+}
+
+function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+function startSpin() {
+  if (isSpinning) return;
+
+  const available = RARITIES.filter(r => (imagesData[r.id] || []).length > 0);
+  if (available.length === 0) {
+    alert('Nessuna immagine trovata. Controlla images.json e le cartelle.');
+    return;
+  }
+
+  let winner = weightedRandom();
+  if ((imagesData[winner.id] || []).length === 0) {
+    winner = available[Math.floor(Math.random() * available.length)];
+  }
+
+  isSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+
+  buildStrip(winner.id);
+
+  const track = document.getElementById('stripTrack');
+  const wrapperW = document.querySelector('.strip-wrapper').offsetWidth;
+  const startX = wrapperW / 2 - SEGMENT_W / 2;
+  const targetX = startX - WINNER_POS * STRIP_TOTAL;
+  const startOffset = startX + STRIP_TOTAL * 4;
+
+  track.style.transform = `translateX(${startOffset}px)`;
+
+  const duration = 4200;
+  const startTime = performance.now();
+
+  function animate(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const currentX = startOffset + (targetX - startOffset) * easeOut(t);
+    track.style.transform = `translateX(${currentX}px)`;
+    if (t < 1) requestAnimationFrame(animate);
+    else onSpinEnd(winner);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function onSpinEnd(winner) {
+  setTimeout(() => {
+    const pool = imagesData[winner.id] || [];
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    const imgSrc = chosen === 'placeholder'
+      ? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23222"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-size="14">placeholder</text></svg>'
+      : `images/${winner.id}/${chosen}`;
+
+    document.getElementById('popupBg').style.background = winner.bg;
+    document.getElementById('popupBadge').textContent = winner.label;
+    document.getElementById('popupBadge').style.background = winner.badgeBg;
+    document.getElementById('popupBadge').style.color = winner.badgeColor;
+    document.getElementById('popupImg').src = imgSrc;
+    document.getElementById('popupName').textContent = chosen === 'placeholder' ? '' : chosen;
+
+    document.getElementById('popup').classList.add('visible');
+
+    startSpeedLines(winner.glowColor);
+
+    isSpinning = false;
+    document.getElementById('spinBtn').disabled = false;
+  }, 350);
+}
+
+function startSpeedLines(color) {
+  const canvas = document.getElementById('linesCanvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+  const NUM_LINES = 80;
+  const MIN_R = 160;
+  const MAX_R = Math.max(canvas.width, canvas.height);
+
+  linesAngle = 0;
+  linesSpeed = 0.18;
+
+  const angles = Array.from({ length: NUM_LINES }, (_, i) => (i / NUM_LINES) * Math.PI * 2);
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(linesAngle);
+
+    angles.forEach(a => {
+      const spread = (Math.PI * 2) / NUM_LINES * 0.35;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a - spread) * MIN_R, Math.sin(a - spread) * MIN_R);
+      ctx.lineTo(Math.cos(a + spread) * MIN_R, Math.sin(a + spread) * MIN_R);
+      ctx.lineTo(Math.cos(a + spread) * MAX_R, Math.sin(a + spread) * MAX_R);
+      ctx.lineTo(Math.cos(a - spread) * MAX_R, Math.sin(a - spread) * MAX_R);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    });
+
+    ctx.restore();
+
+    linesAngle += linesSpeed;
+    linesSpeed = Math.max(0.003, linesSpeed * 0.975);
+
+    linesRAF = requestAnimationFrame(draw);
+  }
+
+  if (linesRAF) cancelAnimationFrame(linesRAF);
+  draw();
+}
+
+function closePopup() {
+  document.getElementById('popup').classList.remove('visible');
+  if (linesRAF) { cancelAnimationFrame(linesRAF); linesRAF = null; }
+  const canvas = document.getElementById('linesCanvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+loadImages();
+</script>
+</body>
+</html>

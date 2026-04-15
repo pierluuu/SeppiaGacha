@@ -1,0 +1,6 @@
+{
+  "common":    ["carta_01.png", "carta_02.png"],
+  "rare":      ["carta_03.png"],
+  "epic":      ["carta_04.png"],
+  "legendary": ["carta_05.png"]
+}
