@@ -254,6 +254,9 @@ let linesAngle = 0;
 let linesSpeed = 0;
 let linesRAF = null;
 
+let recentImages = []; // Lista per ricordare le ultime immagini uscite
+const MAX_RECENT = 10; // Quante immagini vogliamo "bloccare"
+
 async function loadImages() {
   try {
     const res = await fetch('images.json');
@@ -352,7 +355,27 @@ function startSpin() {
 function onSpinEnd(winner) {
   setTimeout(() => {
     const pool = imagesData[winner.id] || [];
-    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    let chosen;
+
+    // Filtriamo le immagini disponibili togliendo quelle uscite di recente
+    let availablePool = pool.filter(img => !recentImages.includes(img));
+
+    // Se per assurdo la pool filtrata è vuota (es: hai solo 5 immagini comuni e vuoi un blocco di 10)
+    // usiamo la pool completa per evitare crash, altrimenti usiamo quella filtrata
+    if (availablePool.length === 0) {
+      chosen = pool[Math.floor(Math.random() * pool.length)];
+    } else {
+      chosen = availablePool[Math.floor(Math.random() * availablePool.length)];
+    }
+
+    // Aggiungiamo l'immagine appena uscita alla memoria
+    recentImages.push(chosen);
+    
+    // Se la memoria supera i 10 elementi, togliamo il più vecchio
+    if (recentImages.length > MAX_RECENT) {
+      recentImages.shift();
+    }
+
     const imgSrc = chosen === 'placeholder'
       ? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23222"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-size="14">placeholder</text></svg>'
       : `images/${winner.id}/${chosen}`;
