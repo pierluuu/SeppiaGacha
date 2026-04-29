@@ -417,7 +417,7 @@ const WINNER_POS   = 20;
 const SEGMENT_W    = 104;
 const SEGMENT_GAP  = 4;
 const STRIP_TOTAL  = SEGMENT_W + SEGMENT_GAP;
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTJgHPKC5WYQtvvzdsOdiPLLQAP7Zop_W2-ivcjAB3M4jYIL8J3e0aGxg_ClJGJH7v/exec"
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFE-GZxhfiGsOfcirkjF4UKURP334ugroveTWwah1b-S2tZCIoIREkuFY82YB7BaPl/exec"
 
 let imagesData   = { common: [], rare: [], epic: [], legendary: [] };
 let csvData      = {};         // { filename: { nome_completo, voti_su, voti_giu } }
@@ -459,9 +459,10 @@ async function loadImages() {
 }
 
 async function loadCsvData() {
+  if (!APPS_SCRIPT_URL) { setServerStatus(false); return; }
   try {
-    const res = await fetch('/api/data');
-    if (!res.ok) throw new Error('server non risponde');
+    const res = await fetch(APPS_SCRIPT_URL);
+    if (!res.ok) throw new Error('sheets non risponde');
     csvData = await res.json();
     setServerStatus(true);
   } catch(e) {
@@ -628,26 +629,13 @@ async function castVote(type) {
   if (type === 'su') csvData[currentFile].voti_su++;
   else               csvData[currentFile].voti_giu++;
 
-  // Invia al server
+  // Invia al server (Google Apps Script — GET per evitare CORS)
   try {
-    const res = await fetch('/api/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename: currentFile, type }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      // Aggiorna con i valori reali dal server
-      document.getElementById('countUp').textContent   = data.voti_su;
-      document.getElementById('countDown').textContent = data.voti_giu;
-      csvData[currentFile].voti_su  = data.voti_su;
-      csvData[currentFile].voti_giu = data.voti_giu;
-      showToast(type === 'su' ? '👍 Voto positivo salvato!' : '👎 Voto negativo salvato!');
-    } else {
-      showToast('⚠️ Server offline — voto non salvato', 3000);
-    }
+    const url = `${APPS_SCRIPT_URL}?filename=${encodeURIComponent(currentFile)}&type=${type}&action=vote`;
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    showToast(type === 'su' ? '👍 Voto positivo inviato!' : '👎 Voto negativo inviato!');
   } catch(e) {
-    showToast('⚠️ Server offline — voto non salvato', 3000);
+    showToast('⚠️ Errore di rete — voto non salvato', 3000);
   }
 }
 
