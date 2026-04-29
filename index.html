@@ -1,3 +1,4 @@
+<!-- VERSIONE GOOGLE SHEETS -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -102,7 +103,7 @@
   .spin-btn:active { transform: scale(0.97); }
   .spin-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
 
-  /* Popup Overlay */
+  /* ── Popup ── */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -110,24 +111,22 @@
     z-index: 100;
     align-items: center;
     justify-content: center;
-    /* Sfondo scuro semi-trasparente per coprire tutto il resto */
     background-color: rgba(0, 0, 0, 0.85);
   }
   .popup-overlay.visible { display: flex; }
 
-  /* Card popup - Più grande */
   .popup-card {
     position: relative;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px; /* Più spazio */
-    padding: 30px; /* Padding interno */
-    background: #1a1a1a; /* Sfondo scuro per la card stessa */
+    gap: 20px;
+    padding: 30px;
+    background: #1a1a1a;
     border-radius: 20px;
     border: 1px solid #333;
-    max-width: 90%; /* Adattabile */
+    max-width: 90%;
     animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
 
@@ -137,7 +136,7 @@
   }
 
   .popup-rarity-badge {
-    font-size: 14px; /* Un po' più grande */
+    font-size: 14px;
     font-weight: 600;
     padding: 6px 24px;
     border-radius: 20px;
@@ -145,20 +144,18 @@
     text-transform: uppercase;
   }
 
-  /* Contenitore Immagine - Più grande e con lo sfondo colorato */
   .popup-image-wrap {
-    position: relative; /* Riferimento per canvas e immagine */
-    width: 400px; /* Molto più grande */
-    height: 400px; /* Molto più grande */
+    position: relative;
+    width: 400px;
+    height: 400px;
     border-radius: 16px;
     overflow: hidden;
-    /* Rimosso background fisso qui, lo gestiamo via JS */
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid transparent; /* Placeholder per il bordo rarità */
+    border: 2px solid transparent;
     animation: zoomIn 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.1s both;
-    transition: background-color 0.4s ease, border-color 0.4s ease; /* Transizione fluida */
+    transition: background-color 0.4s ease, border-color 0.4s ease;
   }
 
   @keyframes zoomIn {
@@ -166,30 +163,148 @@
     to   { transform: scale(1); }
   }
 
-  /* Speed lines canvas - Ora dentro .popup-image-wrap */
   .popup-lines {
     position: absolute;
-    inset: 0; /* Copre tutto il parent */
+    inset: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.6; /* Un po' più visibile */
-    pointer-events: none; /* Non intercetta i click */
-    z-index: 1; /* Sotto l'immagine */
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
   }
 
   .popup-image {
     position: relative;
-    z-index: 2; /* Sopra le speed lines */
+    z-index: 2;
     max-width: 90%;
     max-height: 90%;
     object-fit: contain;
   }
 
+  /* ── Nome completo (dal CSV) ── */
+  .popup-fullname {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
   .popup-filename {
-    font-size: 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+    margin-top: -14px;
+  }
+
+  /* ── Sistema di voto ── */
+  .vote-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .vote-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .vote-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .vote-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s;
+  }
+  .vote-btn:hover { transform: scale(1.1); }
+  .vote-btn:active { transform: scale(0.95); }
+  .vote-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .vote-btn svg {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    padding: 10px;
+    transition: background 0.2s;
+  }
+
+  .vote-btn.up svg {
+    fill: #4ade80;
+    background: rgba(74, 222, 128, 0.12);
+    border: 1.5px solid rgba(74, 222, 128, 0.3);
+  }
+  .vote-btn.up:hover svg { background: rgba(74, 222, 128, 0.25); }
+  .vote-btn.up.voted svg { background: rgba(74, 222, 128, 0.4); border-color: #4ade80; }
+
+  .vote-btn.down svg {
+    fill: #f87171;
+    background: rgba(248, 113, 113, 0.12);
+    border: 1.5px solid rgba(248, 113, 113, 0.3);
+  }
+  .vote-btn.down:hover svg { background: rgba(248, 113, 113, 0.25); }
+  .vote-btn.down.voted svg { background: rgba(248, 113, 113, 0.4); border-color: #f87171; }
+
+  .vote-count {
+    font-size: 13px;
+    font-weight: 600;
     color: rgba(255,255,255,0.7);
     letter-spacing: 1px;
-    margin-top: 5px;
+    min-width: 24px;
+    text-align: center;
+  }
+  .vote-count.up   { color: #4ade80; }
+  .vote-count.down { color: #f87171; }
+
+  .vote-separator {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* Feedback animato dopo il voto */
+  @keyframes votePop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+  .vote-btn.pop { animation: votePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  /* Toast notifica */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #222;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   .popup-close {
@@ -203,13 +318,39 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
-    margin-top: 10px;
+    margin-top: 4px;
   }
   .popup-close:hover { background: rgba(255,255,255,0.2); }
   .popup-close:active { transform: scale(0.97); }
+
+  /* Indicatore connessione server */
+  .server-status {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .server-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #555;
+    transition: background 0.3s;
+  }
+  .server-dot.online  { background: #4ade80; }
+  .server-dot.offline { background: #f87171; }
 </style>
 </head>
 <body>
+
+<div class="server-status">
+  <div class="server-dot" id="serverDot"></div>
+  <span id="serverLabel">server</span>
+</div>
 
 <h1>Seppia Game</h1>
 
@@ -225,14 +366,43 @@
 <div class="popup-overlay" id="popup">
   <div class="popup-card">
     <div class="popup-rarity-badge" id="popupBadge"></div>
+
     <div class="popup-image-wrap" id="popupImgWrap">
       <canvas class="popup-lines" id="linesCanvas"></canvas>
       <img class="popup-image" id="popupImg" src="" alt="risultato">
     </div>
+
+    <!-- Nome completo dal CSV -->
+    <div class="popup-fullname" id="popupFullname"></div>
     <div class="popup-filename" id="popupName"></div>
+
+    <!-- Sistema di voto -->
+    <div class="vote-section">
+      <div class="vote-label">Questo seppia dovrebbe essere più o meno raro?</div>
+      <div class="vote-buttons">
+        <button class="vote-btn up" id="voteUp" onclick="castVote('su')">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4l8 8h-5v8H9v-8H4z"/>
+          </svg>
+          <span class="vote-count up" id="countUp">0</span>
+        </button>
+
+        <div class="vote-separator"></div>
+
+        <button class="vote-btn down" id="voteDown" onclick="castVote('giu')">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 20l-8-8h5V4h6v8h5z"/>
+          </svg>
+          <span class="vote-count down" id="countDown">0</span>
+        </button>
+      </div>
+    </div>
+
     <button class="popup-close" onclick="closePopup()">Chiudi</button>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const RARITIES = [
@@ -247,39 +417,72 @@ const WINNER_POS   = 20;
 const SEGMENT_W    = 104;
 const SEGMENT_GAP  = 4;
 const STRIP_TOTAL  = SEGMENT_W + SEGMENT_GAP;
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvHC9Bp0rQT5uS3SJKHCImmPk4QdrN-ihi9ulB7lfy4LExD2xzJLsXH347tJX-j9TG/exec"
 
-let imagesData = { common: [], rare: [], epic: [], legendary: [] };
-let isSpinning = false;
-let linesAngle = 0;
-let linesSpeed = 0;
-let linesRAF = null;
+let imagesData   = { common: [], rare: [], epic: [], legendary: [] };
+let csvData      = {};         // { filename: { nome_completo, voti_su, voti_giu } }
+let currentFile  = null;      // file attualmente nel popup
+let hasVoted     = false;     // ha già votato in questa apertura?
+let isSpinning   = false;
+let linesAngle   = 0;
+let linesSpeed   = 0;
+let linesRAF     = null;
+let recentImages = [];
+const MAX_RECENT = 10;
 
-let recentImages = []; // Lista per ricordare le ultime immagini uscite
-const MAX_RECENT = 10; // Quante immagini vogliamo "bloccare"
+// ── Indicatore server ───────────────────────────────────────────────────────
+function setServerStatus(online) {
+  const dot   = document.getElementById('serverDot');
+  const label = document.getElementById('serverLabel');
+  dot.className   = 'server-dot ' + (online ? 'online' : 'offline');
+  label.textContent = online ? 'online' : 'offline (sola lettura)';
+}
 
+// ── Toast ───────────────────────────────────────────────────────────────────
+function showToast(msg, duration = 2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ── Caricamento dati ────────────────────────────────────────────────────────
 async function loadImages() {
   try {
     const res = await fetch('images.json');
-    const data = await res.json();
-    imagesData = data;
+    imagesData = await res.json();
   } catch(e) {
-    console.warn('images.json non trovato o errore di caricamento. Uso placeholder.');
-    imagesData = {
-      common:    ['placeholder'],
-      rare:      ['placeholder'],
-      epic:      ['placeholder'],
-      legendary: ['placeholder'],
-    };
+    console.warn('images.json non trovato. Uso placeholder.');
+    imagesData = { common: ['placeholder'], rare: ['placeholder'], epic: ['placeholder'], legendary: ['placeholder'] };
   }
+}
+
+async function loadCsvData() {
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) throw new Error('server non risponde');
+    csvData = await res.json();
+    setServerStatus(true);
+  } catch(e) {
+    csvData = {};
+    setServerStatus(false);
+  }
+}
+
+// ── Utility ─────────────────────────────────────────────────────────────────
+function getFullName(filename) {
+  return (csvData[filename] && csvData[filename].nome_completo) ? csvData[filename].nome_completo : filename;
+}
+function getVotes(filename) {
+  if (csvData[filename]) return { su: csvData[filename].voti_su || 0, giu: csvData[filename].voti_giu || 0 };
+  return { su: 0, giu: 0 };
 }
 
 function weightedRandom() {
   const total = RARITIES.reduce((s, r) => s + r.weight, 0);
   let rand = Math.random() * total;
-  for (const r of RARITIES) {
-    rand -= r.weight;
-    if (rand <= 0) return r;
-  }
+  for (const r of RARITIES) { rand -= r.weight; if (rand <= 0) return r; }
   return RARITIES[0];
 }
 
@@ -288,7 +491,6 @@ function buildStrip(winnerId) {
   track.innerHTML = '';
   const totalW = RARITIES.reduce((s, r) => s + r.weight, 0);
   const sequence = [];
-
   for (let i = 0; i < STRIP_LENGTH; i++) {
     let rand = Math.random() * totalW;
     let chosen = RARITIES[0];
@@ -296,7 +498,6 @@ function buildStrip(winnerId) {
     sequence.push(chosen);
   }
   sequence[WINNER_POS] = RARITIES.find(r => r.id === winnerId);
-
   sequence.forEach(r => {
     const seg = document.createElement('div');
     seg.className = 'strip-segment';
@@ -305,42 +506,34 @@ function buildStrip(winnerId) {
     seg.textContent = r.label;
     track.appendChild(seg);
   });
-
   return sequence;
 }
 
 function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
+// ── Spin ─────────────────────────────────────────────────────────────────────
 function startSpin() {
   if (isSpinning) return;
-
   const available = RARITIES.filter(r => (imagesData[r.id] || []).length > 0);
   if (available.length === 0) {
-    alert('Nessuna immagine trovata. Controlla images.json, la struttura delle cartelle e i nomi dei file (case-sensitive!).');
+    alert('Nessuna immagine trovata. Controlla images.json.');
     return;
   }
-
   let winner = weightedRandom();
   if ((imagesData[winner.id] || []).length === 0) {
     winner = available[Math.floor(Math.random() * available.length)];
   }
-
   isSpinning = true;
   document.getElementById('spinBtn').disabled = true;
-
   buildStrip(winner.id);
-
-  const track = document.getElementById('stripTrack');
+  const track    = document.getElementById('stripTrack');
   const wrapperW = document.querySelector('.strip-wrapper').offsetWidth;
-  const startX = wrapperW / 2 - SEGMENT_W / 2;
-  const targetX = startX - WINNER_POS * STRIP_TOTAL;
+  const startX   = wrapperW / 2 - SEGMENT_W / 2;
+  const targetX  = startX - WINNER_POS * STRIP_TOTAL;
   const startOffset = startX + STRIP_TOTAL * 4;
-
   track.style.transform = `translateX(${startOffset}px)`;
-
-  const duration = 4200;
+  const duration  = 4200;
   const startTime = performance.now();
-
   function animate(now) {
     const t = Math.min((now - startTime) / duration, 1);
     const currentX = startOffset + (targetX - startOffset) * easeOut(t);
@@ -348,121 +541,149 @@ function startSpin() {
     if (t < 1) requestAnimationFrame(animate);
     else onSpinEnd(winner);
   }
-
   requestAnimationFrame(animate);
 }
 
+// ── Fine spin → apri popup ───────────────────────────────────────────────────
 function onSpinEnd(winner) {
   setTimeout(() => {
     const pool = imagesData[winner.id] || [];
     let chosen;
-
-    // Filtriamo le immagini disponibili togliendo quelle uscite di recente
-    let availablePool = pool.filter(img => !recentImages.includes(img));
-
-    // Se per assurdo la pool filtrata è vuota (es: hai solo 5 immagini comuni e vuoi un blocco di 10)
-    // usiamo la pool completa per evitare crash, altrimenti usiamo quella filtrata
-    if (availablePool.length === 0) {
-      chosen = pool[Math.floor(Math.random() * pool.length)];
-    } else {
-      chosen = availablePool[Math.floor(Math.random() * availablePool.length)];
-    }
-
-    // Aggiungiamo l'immagine appena uscita alla memoria
+    const availablePool = pool.filter(img => !recentImages.includes(img));
+    chosen = availablePool.length > 0
+      ? availablePool[Math.floor(Math.random() * availablePool.length)]
+      : pool[Math.floor(Math.random() * pool.length)];
     recentImages.push(chosen);
-    
-    // Se la memoria supera i 10 elementi, togliamo il più vecchio
-    if (recentImages.length > MAX_RECENT) {
-      recentImages.shift();
-    }
+    if (recentImages.length > MAX_RECENT) recentImages.shift();
+
+    currentFile = chosen;
+    hasVoted    = false;
 
     const imgSrc = chosen === 'placeholder'
       ? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23222"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-size="14">placeholder</text></svg>'
       : `images/${winner.id}/${chosen}`;
 
-    // --- MODIFICHE QUI ---
+    // Sfondo e badge rarità
     const imgWrap = document.getElementById('popupImgWrap');
-    // Applica colore di sfondo e bordo al quadrato dell'immagine
     imgWrap.style.backgroundColor = winner.bg;
-    imgWrap.style.borderColor = winner.glowColor; // Usa il colore del glow per il bordo
-
-    document.getElementById('popupBadge').textContent = winner.label;
+    imgWrap.style.borderColor     = winner.glowColor;
+    document.getElementById('popupBadge').textContent   = winner.label;
     document.getElementById('popupBadge').style.background = winner.badgeBg;
-    document.getElementById('popupBadge').style.color = winner.badgeColor;
-    
-    // Reset canvas prima di caricarne uno nuovo
+    document.getElementById('popupBadge').style.color      = winner.badgeColor;
+
+    // Nome completo e filename
+    document.getElementById('popupFullname').textContent = chosen === 'placeholder' ? '' : getFullName(chosen);
+    document.getElementById('popupName').textContent     = chosen === 'placeholder' ? '' : chosen;
+
+    // Voti aggiornati dal CSV (locale)
+    const votes = getVotes(chosen);
+    document.getElementById('countUp').textContent   = votes.su;
+    document.getElementById('countDown').textContent = votes.giu;
+
+    // Reset stato pulsanti voto
+    const btnUp   = document.getElementById('voteUp');
+    const btnDown = document.getElementById('voteDown');
+    btnUp.classList.remove('voted', 'pop');
+    btnDown.classList.remove('voted', 'pop');
+    btnUp.disabled   = false;
+    btnDown.disabled = false;
+
+    // Canvas
     const canvas = document.getElementById('linesCanvas');
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 
     const img = document.getElementById('popupImg');
-    // Mostra il popup solo DOPO che l'immagine è stata caricata per evitare flash bianchi
     img.onload = () => {
-        document.getElementById('popup').classList.add('visible');
-        startSpeedLines(winner.glowColor); // Avvia le linee riferite al nuovo quadrato
+      document.getElementById('popup').classList.add('visible');
+      startSpeedLines(winner.glowColor);
     };
     img.src = imgSrc;
-    document.getElementById('popupName').textContent = chosen === 'placeholder' ? '' : chosen;
 
     isSpinning = false;
     document.getElementById('spinBtn').disabled = false;
   }, 350);
 }
 
-function startSpeedLines(color) {
-  const canvas = document.getElementById('linesCanvas');
-  const ctx = canvas.getContext('2d');
-  const imgWrap = document.getElementById('popupImgWrap');
+// ── Voto ─────────────────────────────────────────────────────────────────────
+async function castVote(type) {
+  if (!currentFile || hasVoted) return;
 
-  // Setta le dimensioni del canvas uguali a quelle del contenitore dell'immagine
+  hasVoted = true;
+  const btnUp   = document.getElementById('voteUp');
+  const btnDown = document.getElementById('voteDown');
+  btnUp.disabled   = true;
+  btnDown.disabled = true;
+
+  const btn = type === 'su' ? btnUp : btnDown;
+  btn.classList.add('voted');
+  btn.classList.add('pop');
+  btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
+
+  // Aggiornamento ottimistico locale
+  const countEl = document.getElementById(type === 'su' ? 'countUp' : 'countDown');
+  countEl.textContent = parseInt(countEl.textContent) + 1;
+
+  // Aggiorna csvData locale
+  if (!csvData[currentFile]) csvData[currentFile] = { nome_completo: currentFile, voti_su: 0, voti_giu: 0 };
+  if (type === 'su') csvData[currentFile].voti_su++;
+  else               csvData[currentFile].voti_giu++;
+
+  // Invia al server
+  try {
+    const res = await fetch('/api/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: currentFile, type }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      // Aggiorna con i valori reali dal server
+      document.getElementById('countUp').textContent   = data.voti_su;
+      document.getElementById('countDown').textContent = data.voti_giu;
+      csvData[currentFile].voti_su  = data.voti_su;
+      csvData[currentFile].voti_giu = data.voti_giu;
+      showToast(type === 'su' ? '👍 Voto positivo salvato!' : '👎 Voto negativo salvato!');
+    } else {
+      showToast('⚠️ Server offline — voto non salvato', 3000);
+    }
+  } catch(e) {
+    showToast('⚠️ Server offline — voto non salvato', 3000);
+  }
+}
+
+// ── Speed lines ──────────────────────────────────────────────────────────────
+function startSpeedLines(color) {
+  const canvas  = document.getElementById('linesCanvas');
+  const ctx     = canvas.getContext('2d');
+  const imgWrap = document.getElementById('popupImgWrap');
   canvas.width  = imgWrap.offsetWidth;
   canvas.height = imgWrap.offsetHeight;
-
-  const cx = canvas.width  / 2;
-  const cy = canvas.height / 2;
+  const cx = canvas.width / 2, cy = canvas.height / 2;
   const NUM_LINES = 70;
-  const MIN_R = 100; // Raggio interno ridotto
-  const MAX_R = Math.max(canvas.width, canvas.height) * 0.8; // Raggio esterno
-
-  linesAngle = 0;
-  linesSpeed = 0.2; // Velocità iniziale
-
+  const MIN_R = 100;
+  const MAX_R = Math.max(canvas.width, canvas.height) * 0.8;
+  linesAngle = 0; linesSpeed = 0.2;
   const angles = Array.from({ length: NUM_LINES }, (_, i) => (i / NUM_LINES) * Math.PI * 2);
-
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Opzionale: un leggero glow di sfondo dentro il quadrato
-    ctx.fillStyle = color.replace('0.7', '0.15').replace('0.6', '0.1').replace('0.5', '0.08').replace('0.4', '0.05'); // Rende il colore molto trasparente
-    ctx.beginPath();
-    ctx.arc(cx, cy, MAX_R, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(linesAngle);
-
+    ctx.fillStyle = color.replace('0.7','0.15').replace('0.6','0.1').replace('0.5','0.08').replace('0.4','0.05');
+    ctx.beginPath(); ctx.arc(cx, cy, MAX_R, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(linesAngle);
     angles.forEach(a => {
       const spread = (Math.PI * 2) / NUM_LINES * 0.4;
       ctx.beginPath();
-      // Disegna forme trapezoidali che partono dal centro
       ctx.moveTo(Math.cos(a - spread) * MIN_R, Math.sin(a - spread) * MIN_R);
       ctx.lineTo(Math.cos(a + spread) * MIN_R, Math.sin(a + spread) * MIN_R);
       ctx.lineTo(Math.cos(a + spread) * MAX_R, Math.sin(a + spread) * MAX_R);
       ctx.lineTo(Math.cos(a - spread) * MAX_R, Math.sin(a - spread) * MAX_R);
       ctx.closePath();
-      ctx.fillStyle = color;
-      ctx.fill();
+      ctx.fillStyle = color; ctx.fill();
     });
-
     ctx.restore();
-
     linesAngle += linesSpeed;
-    // Decelerazione
-    linesSpeed = Math.max(0.002, linesSpeed * 0.98);
-
+    linesSpeed   = Math.max(0.002, linesSpeed * 0.98);
     linesRAF = requestAnimationFrame(draw);
   }
-
   if (linesRAF) cancelAnimationFrame(linesRAF);
   draw();
 }
@@ -470,14 +691,14 @@ function startSpeedLines(color) {
 function closePopup() {
   document.getElementById('popup').classList.remove('visible');
   if (linesRAF) { cancelAnimationFrame(linesRAF); linesRAF = null; }
-  // Pulisci il canvas alla chiusura
   const canvas = document.getElementById('linesCanvas');
   canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-  // Reset src immagine per evitare flash alla prossima apertura
-  document.getElementById('popupImg').src = "";
+  document.getElementById('popupImg').src = '';
+  currentFile = null;
 }
 
-loadImages();
+// ── Init ─────────────────────────────────────────────────────────────────────
+Promise.all([loadImages(), loadCsvData()]);
 </script>
 </body>
 </html>
