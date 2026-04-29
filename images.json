@@ -1,20 +1,20 @@
 {
-  "common":    ["seppia_2.png","seppia_3.png","seppia_6.png","seppia_7.png","seppia_9.png","seppia_12.png","seppia_13.png", 
+  "common":    ["seppia_3.png","seppia_6.png","seppia_7.png","seppia_9.png","seppia_12.png","seppia_13.png", 
  "seppia_15.png","seppia_16.png","seppia_20.png","seppia_23.png","seppia_24.png","seppia_25.png","seppia_26.png", 
  "seppia_37.png","seppia_38.png","seppia_41.png","seppia_43.png","seppia_44.png","seppia_48.png","seppia_50.png", 
  "seppia_51.png","seppia_52.png","seppia_64.png","seppia_69.png","seppia_71.png","seppia_73.png","seppia_79.png", 
- "seppia_86.png","seppia_87.png","seppia_97.png","seppia_98.png","seppia_100.png","seppia_101.png","seppia_102.png","seppia_108.png"],
+ "seppia_86.png","seppia_87.png","seppia_97.png","seppia_98.png","seppia_100.png","seppia_101.png","seppia_102.png", "seppia_108.png", "seppia_111.png"],
 
   "rare":      ["seppia_8.png","seppia_19.png","seppia_21.png","seppia_22.png","seppia_27.png","seppia_28.png",
  "seppia_33.png","seppia_34.png","seppia_40.png","seppia_45.png","seppia_47.png","seppia_53.png",
  "seppia_54.png","seppia_58.png","seppia_60.png","seppia_61.png","seppia_63.png","seppia_67.png",
  "seppia_68.png","seppia_70.png","seppia_74.png","seppia_77.png","seppia_80.png","seppia_83.png",
- "seppia_88.png","seppia_92.png","seppia_94.png","seppia_103.png","seppia_104.png","seppia_110.png","seppia_107.png"],
+ "seppia_88.png","seppia_92.png","seppia_94.png","seppia_103.png","seppia_104.png", "seppia_107.png", "seppia_109.png", "seppia_110.png"],
 
   "epic":      ["seppia_4.png","seppia_5.png","seppia_10.png","seppia_11.png","seppia_17.png","seppia_18.png","seppia_29.png","seppia_30.png", 
  "seppia_31.png","seppia_35.png","seppia_39.png","seppia_49.png","seppia_55.png","seppia_56.png","seppia_57.png","seppia_62.png","seppia_66.png", 
- "seppia_72.png","seppia_75.png","seppia_84.png","seppia_85.png","seppia_90.png","seppia_95.png","seppia_96.png","seppia_99.png","seppia_106.png","seppia_109.png"],
+ "seppia_72.png","seppia_75.png","seppia_84.png","seppia_85.png","seppia_90.png","seppia_95.png","seppia_96.png","seppia_99.png", "seppia_106.png", "seppia_112.png"],
 
   "legendary": ["seppia_0.png","seppia_1.png","seppia_14.png","seppia_32.png","seppia_36.png","seppia_42.png","seppia_46.png","seppia_59.png", 
- "seppia_65.png","seppia_76.png","seppia_78.png","seppia_81.png","seppia_82.png","seppia_89.png","seppia_91.png","seppia_93.png","seppia_105.png"]
+ "seppia_65.png","seppia_76.png","seppia_78.png","seppia_81.png","seppia_82.png","seppia_89.png","seppia_91.png","seppia_93.png", "seppia_105.png"]
 }
