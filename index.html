@@ -262,21 +262,29 @@
   .vote-btn.down:hover svg { background: rgba(248, 113, 113, 0.25); }
   .vote-btn.down.voted svg { background: rgba(248, 113, 113, 0.4); border-color: #f87171; }
 
-  .vote-count {
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.7);
-    letter-spacing: 1px;
-    min-width: 24px;
-    text-align: center;
+  .vote-total {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
-  .vote-count.up   { color: #4ade80; }
-  .vote-count.down { color: #f87171; }
-
-  .vote-separator {
-    width: 1px;
-    height: 40px;
-    background: rgba(255,255,255,0.1);
+  .vote-total-number {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+    min-width: 40px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .vote-total-number.pop {
+    animation: votePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .vote-total-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
   }
 
   /* Feedback animato dopo il voto */
@@ -347,6 +355,113 @@
   }
   .server-dot.online  { background: #4ade80; }
   .server-dot.offline { background: #f87171; }
+
+  /* ── Tasto Info ── */
+  .info-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+    z-index: 50;
+    letter-spacing: 0;
+  }
+  .info-btn:hover  { background: rgba(255,255,255,0.18); transform: scale(1.08); }
+  .info-btn:active { transform: scale(0.95); }
+
+  /* ── Popup Info ── */
+  .info-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 24px;
+    pointer-events: none;
+  }
+  .info-overlay.visible {
+    display: flex;
+    pointer-events: all;
+  }
+
+  .info-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 28px 28px 22px;
+    max-width: 360px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    animation: infoSlideIn 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+
+  @keyframes infoSlideIn {
+    from { transform: translateY(16px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);    opacity: 1; }
+  }
+
+  .info-card h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 20px;
+  }
+
+  .info-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .info-entry:last-of-type { border-bottom: none; }
+
+  .info-entry-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .info-entry-text {
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+  }
+
+  .info-close {
+    align-self: flex-end;
+    margin-top: 18px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 8px 24px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .info-close:hover { background: rgba(255,255,255,0.16); }
 </style>
 </head>
 <body>
@@ -382,22 +497,23 @@
 
     <!-- Sistema di voto -->
     <div class="vote-section">
-      <div class="vote-label">Questo seppia dovrebbe essere più o meno raro? Votalo qui</div>
+      <div class="vote-label">Questo seppia dovrebbe essere più o meno raro?</div>
       <div class="vote-buttons">
         <button class="vote-btn up" id="voteUp" onclick="castVote('su')">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4l8 8h-5v8H9v-8H4z"/>
           </svg>
-          <span class="vote-count up" id="countUp">0</span>
         </button>
 
-        <div class="vote-separator"></div>
+        <div class="vote-total">
+          <span class="vote-total-number" id="voteTotal">0</span>
+          <span class="vote-total-label">voti</span>
+        </div>
 
         <button class="vote-btn down" id="voteDown" onclick="castVote('giu')">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 20l-8-8h5V4h6v8h5z"/>
           </svg>
-          <span class="vote-count down" id="countDown">0</span>
         </button>
       </div>
     </div>
@@ -580,10 +696,9 @@ function onSpinEnd(winner) {
     document.getElementById('popupFullname').textContent = chosen === 'placeholder' ? '' : getFullName(chosen);
     document.getElementById('popupName').textContent     = chosen === 'placeholder' ? '' : chosen;
 
-    // Voti aggiornati dal CSV (locale)
+    // Totale voti dal CSV (locale)
     const votes = getVotes(chosen);
-    document.getElementById('countUp').textContent   = votes.su;
-    document.getElementById('countDown').textContent = votes.giu;
+    document.getElementById('voteTotal').textContent = votes.su - votes.giu;
 
     // Reset stato pulsanti voto
     const btnUp   = document.getElementById('voteUp');
@@ -625,13 +740,15 @@ async function castVote(type) {
   btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
 
   // Aggiornamento ottimistico locale
-  const countEl = document.getElementById(type === 'su' ? 'countUp' : 'countDown');
-  countEl.textContent = parseInt(countEl.textContent) + 1;
-
-  // Aggiorna csvData locale
   if (!csvData[currentFile]) csvData[currentFile] = { nome_completo: currentFile, voti_su: 0, voti_giu: 0 };
   if (type === 'su') csvData[currentFile].voti_su++;
   else               csvData[currentFile].voti_giu++;
+  const totalEl = document.getElementById('voteTotal');
+  totalEl.textContent = csvData[currentFile].voti_su - csvData[currentFile].voti_giu;
+  totalEl.classList.remove('pop');
+  void totalEl.offsetWidth; // forza reflow per riavviare animazione
+  totalEl.classList.add('pop');
+  totalEl.addEventListener('animationend', () => totalEl.classList.remove('pop'), { once: true });
 
   // Invia al server (Google Apps Script — GET per evitare CORS)
   try {
@@ -689,8 +806,60 @@ function closePopup() {
   currentFile = null;
 }
 
+
+// ── Info popup ────────────────────────────────────────────────
+function openInfo() {
+  document.getElementById('infoOverlay').classList.add('visible');
+}
+function closeInfo() {
+  document.getElementById('infoOverlay').classList.remove('visible');
+}
+function closeInfoOnBg(e) {
+  // chiude solo se si clicca sull'overlay, non sulla card
+  if (e.target === document.getElementById('infoOverlay')) closeInfo();
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 Promise.all([loadImages(), loadCsvData()]);
 </script>
+
+<!-- Tasto Info -->
+<button class="info-btn" onclick="openInfo()">i</button>
+
+<!-- Popup Info -->
+<div class="info-overlay" id="infoOverlay" onclick="closeInfoOnBg(event)">
+  <div class="info-card" id="infoCard">
+    <h2>Info</h2>
+
+    <!-- ✏️ Aggiungi o modifica le voci qui sotto -->
+
+    <div class="info-entry">
+      <span class="info-entry-title">Cos'è Seppia Game?</span>
+      <span class="info-entry-text">Un Gacha game dedicato a Seppia, il mio gatto. In questi anni ho creato tanti (troppi) sticker di Seppia che fa cose ed ho deciso di condividerli col mondo.</span>
+    </div>
+
+    <div class="info-entry">
+      <span class="info-entry-title">Come funzionano i voti?</span>
+      <span class="info-entry-text">Puoi votare con le frecce se pensi che un Seppia debba essere più o meno 
+        raro; nel momento in cui un Seppia raggiunge 5 voti (positivi o negativi) prenderò in considerazione di 
+        cambiarlo di rarità (su o giù), arrivato a 10 (o -10) potrò solo piegarmi al volere del popolo.
+        <br><br><b>Se un Seppia è già Comune, non potrà scendere oltre. Così come un Leggendario non potrà 
+        salire oltre.</b></span>
+    </div>
+
+    <div class="info-entry">
+      <span class="info-entry-title">Le rarità</span>
+      <span class="info-entry-text">Comune (60%) · Raro (25%) · Epico (12%) · Leggendario (3%)</span>
+    </div>
+
+    <div class="info-entry">
+      <span class="info-entry-title">BUONA FORTUNA!</span>
+    </div>
+
+    <!-- ✏️ Copia e incolla un blocco .info-entry per aggiungerne altri -->
+
+    <button class="info-close" onclick="closeInfo()">Chiudi</button>
+  </div>
+</div>
 </body>
 </html>
