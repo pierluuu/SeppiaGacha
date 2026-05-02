@@ -1,4 +1,3 @@
-<!-- VERSIONE GOOGLE SHEETS -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -388,7 +387,7 @@
     z-index: 200;
     align-items: flex-end;
     justify-content: flex-end;
-    padding: 24px;
+    padding: 70px 16px 16px;
     pointer-events: none;
   }
   .info-overlay.visible {
@@ -400,15 +399,21 @@
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 16px;
-    padding: 28px 28px 22px;
+    padding: 24px 24px 24px;
     max-width: 360px;
     width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 0;
     animation: infoSlideIn 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
   }
+  .info-card::-webkit-scrollbar { width: 4px; }
+  .info-card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
   @keyframes infoSlideIn {
     from { transform: translateY(16px) scale(0.97); opacity: 0; }
@@ -422,6 +427,7 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.5);
     margin-bottom: 20px;
+    flex-shrink: 0;
   }
 
   .info-entry {
@@ -446,22 +452,6 @@
     color: rgba(255,255,255,0.85);
     line-height: 1.6;
   }
-
-  .info-close {
-    align-self: flex-end;
-    margin-top: 18px;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 8px 24px;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .info-close:hover { background: rgba(255,255,255,0.16); }
 </style>
 </head>
 <body>
@@ -540,8 +530,8 @@ const STRIP_TOTAL  = SEGMENT_W + SEGMENT_GAP;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFE-GZxhfiGsOfcirkjF4UKURP334ugroveTWwah1b-S2tZCIoIREkuFY82YB7BaPl/exec"
 
 let imagesData   = { common: [], rare: [], epic: [], legendary: [] };
-let csvData      = {};         // { filename: { nome_completo, voti_su, voti_giu } }
-let currentFile  = null;      // file attualmente nel popup
+let csvData      = {};
+let currentFile  = null;
 // Voti già espressi in questa sessione
 function hasVotedFor(filename) {
   return sessionStorage.getItem('vote_' + filename) !== null;
@@ -758,7 +748,7 @@ async function castVote(type) {
   const totalEl = document.getElementById('voteTotal');
   totalEl.textContent = csvData[currentFile].voti_su - csvData[currentFile].voti_giu;
   totalEl.classList.remove('pop');
-  void totalEl.offsetWidth; // forza reflow per riavviare animazione
+  void totalEl.offsetWidth;
   totalEl.classList.add('pop');
   totalEl.addEventListener('animationend', () => totalEl.classList.remove('pop'), { once: true });
 
@@ -827,7 +817,6 @@ function closeInfo() {
   document.getElementById('infoOverlay').classList.remove('visible');
 }
 function closeInfoOnBg(e) {
-  // chiude solo se si clicca sull'overlay, non sulla card
   if (e.target === document.getElementById('infoOverlay')) closeInfo();
 }
 
@@ -842,8 +831,6 @@ Promise.all([loadImages(), loadCsvData()]);
 <div class="info-overlay" id="infoOverlay" onclick="closeInfoOnBg(event)">
   <div class="info-card" id="infoCard">
     <h2>Info</h2>
-
-    <!-- ✏️ Aggiungi o modifica le voci qui sotto -->
 
     <div class="info-entry">
       <span class="info-entry-title">Cos'è Seppia Game?</span>
@@ -862,19 +849,15 @@ Promise.all([loadImages(), loadCsvData()]);
     <div class="info-entry">
       <span class="info-entry-title">Le rarità</span>
       <span class="info-entry-text">
-          · Comune 60% - 15 voti necessari per cambio di rarità <br>
-          · Raro 25% - 10 voti necessari per cambio di rarità <br>
-          · Epico 12% - 8 voti necessari per cambiodi rarità <br>
-          · Leggendario 3% - 5 voti necessari per cambio di rarità</span>
+          · <b>Comune 60%</b> - <i>15 voti necessari per cambio di rarità</i> <br>
+          · <b>Raro 25%</b> - <i>10 voti necessari per cambio di rarità</i> <br>
+          · <b>Epico 12%</b> - <i>8 voti necessari per cambio di rarità</i> <br>
+          · <b>Leggendario 3%</b> - <i> 5 voti necessari per cambio di rarità</i></span>
     </div>
 
     <div class="info-entry">
       <span class="info-entry-title">BUONA FORTUNA!</span>
     </div>
-
-    <!-- ✏️ Copia e incolla un blocco .info-entry per aggiungerne altri -->
-
-    <button class="info-close" onclick="closeInfo()">Chiudi</button>
   </div>
 </div>
 </body>
