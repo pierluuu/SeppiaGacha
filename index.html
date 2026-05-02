@@ -725,15 +725,9 @@ function onSpinEnd(winner) {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 
     const img = document.getElementById('popupImg');
-    const showPopup = () => {
+    img.onload = () => {
       document.getElementById('popup').classList.add('visible');
       startSpeedLines(winner.glowColor);
-    };
-    img.onload  = showPopup;
-    img.onerror = () => {
-      img.onerror = null; // evita loop infinito
-      img.src = '';
-      showPopup();
     };
     img.src = imgSrc;
 
