@@ -542,13 +542,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFE-GZxhfiGsOf
 let imagesData   = { common: [], rare: [], epic: [], legendary: [] };
 let csvData      = {};         // { filename: { nome_completo, voti_su, voti_giu } }
 let currentFile  = null;      // file attualmente nel popup
-// Voti già espressi in questa sessione { filename: 'su'|'giu' }
-function hasVotedFor(filename) {
-  return sessionStorage.getItem('vote_' + filename) !== null;
-}
-function markVoted(filename, type) {
-  sessionStorage.setItem('vote_' + filename, type);
-}
+let hasVoted     = false;     // ha già votato in questa apertura?
 let isSpinning   = false;
 let linesAngle   = 0;
 let linesSpeed   = 0;
@@ -684,11 +678,11 @@ function onSpinEnd(winner) {
     if (recentImages.length > MAX_RECENT) recentImages.shift();
 
     currentFile = chosen;
-    const alreadyVoted = hasVotedFor(chosen);
+    hasVoted    = false;
 
     const imgSrc = chosen === 'placeholder'
       ? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23222"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-size="14">placeholder</text></svg>'
-      : `images/${winner.id}/${chosen}`;
+      : `images/${chosen}`;
 
     // Sfondo e badge rarità
     const imgWrap = document.getElementById('popupImgWrap');
@@ -711,15 +705,8 @@ function onSpinEnd(winner) {
     const btnDown = document.getElementById('voteDown');
     btnUp.classList.remove('voted', 'pop');
     btnDown.classList.remove('voted', 'pop');
-    if (alreadyVoted) {
-      const prevVote = sessionStorage.getItem('vote_' + chosen);
-      (prevVote === 'su' ? btnUp : btnDown).classList.add('voted');
-      btnUp.disabled   = true;
-      btnDown.disabled = true;
-    } else {
-      btnUp.disabled   = false;
-      btnDown.disabled = false;
-    }
+    btnUp.disabled   = false;
+    btnDown.disabled = false;
 
     // Canvas
     const canvas = document.getElementById('linesCanvas');
@@ -739,9 +726,9 @@ function onSpinEnd(winner) {
 
 // ── Voto ─────────────────────────────────────────────────────────────────────
 async function castVote(type) {
-  if (!currentFile || hasVotedFor(currentFile)) return;
+  if (!currentFile || hasVoted) return;
 
-  markVoted(currentFile, type);
+  hasVoted = true;
   const btnUp   = document.getElementById('voteUp');
   const btnDown = document.getElementById('voteDown');
   btnUp.disabled   = true;
