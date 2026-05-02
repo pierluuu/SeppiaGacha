@@ -731,8 +731,8 @@ function onSpinEnd(winner) {
     };
     img.onload  = showPopup;
     img.onerror = () => {
-      // Immagine non trovata: mostra placeholder e apri il popup comunque
-      img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23222"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-size="14">?</text></svg>';
+      img.onerror = null; // evita loop infinito
+      img.src = '';
       showPopup();
     };
     img.src = imgSrc;
