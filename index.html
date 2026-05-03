@@ -1,461 +1,14 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gacha</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: #111;
-    color: #fff;
-    font-family: sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 32px;
-    padding: 32px 16px;
-  }
-
-  h1 {
-    font-size: 28px;
-    font-weight: 500;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #fff;
-  }
-
-  .strip-wrapper {
-    width: 100%;
-    max-width: 700px;
-    height: 120px;
-    overflow: hidden;
-    border-radius: 12px;
-    border: 0.5px solid #333;
-    position: relative;
-    background: #1a1a1a;
-  }
-
-  .strip-mask-left, .strip-mask-right {
-    position: absolute;
-    top: 0; bottom: 0;
-    width: 100px;
-    z-index: 2;
-    pointer-events: none;
-  }
-  .strip-mask-left  { left: 0;  background: linear-gradient(to right, #111, transparent); }
-  .strip-mask-right { right: 0; background: linear-gradient(to left,  #111, transparent); }
-
-  .strip-center-indicator {
-    position: absolute;
-    top: 8px; bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 108px;
-    border: 2px solid rgba(255,255,255,0.6);
-    border-radius: 8px;
-    z-index: 3;
-    pointer-events: none;
-  }
-
-  .strip-track {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    position: absolute;
-    left: 0; top: 0;
-    will-change: transform;
-  }
-
-  .strip-segment {
-    width: 104px;
-    height: 100px;
-    margin: 0 2px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 500;
-    flex-shrink: 0;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .spin-btn {
-    background: #fff;
-    color: #111;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
-    padding: 14px 56px;
-    cursor: pointer;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .spin-btn:hover  { opacity: 0.85; }
-  .spin-btn:active { transform: scale(0.97); }
-  .spin-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
-
-  /* ── Popup ── */
-  .popup-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.85);
-  }
-  .popup-overlay.visible { display: flex; }
-
-  .popup-card {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 30px;
-    background: #1a1a1a;
-    border-radius: 20px;
-    border: 1px solid #333;
-    max-width: 90%;
-    animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  }
-
-  @keyframes popIn {
-    from { transform: scale(0.6); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
-  }
-
-  .popup-rarity-badge {
-    font-size: 14px;
-    font-weight: 600;
-    padding: 6px 24px;
-    border-radius: 20px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-
-  .popup-image-wrap {
-    position: relative;
-    width: 400px;
-    height: 400px;
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid transparent;
-    animation: zoomIn 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.1s both;
-    transition: background-color 0.4s ease, border-color 0.4s ease;
-  }
-
-  @keyframes zoomIn {
-    from { transform: scale(0.75); }
-    to   { transform: scale(1); }
-  }
-
-  .popup-lines {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.6;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .popup-image {
-    position: relative;
-    z-index: 2;
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-  }
-
-  /* ── Nome completo (dal CSV) ── */
-  .popup-fullname {
-    font-size: 20px;
-    font-weight: 600;
-    color: #fff;
-    letter-spacing: 1px;
-    text-align: center;
-  }
-
-  .popup-filename {
-    font-size: 12px;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 1px;
-    margin-top: -14px;
-    display: none;
-  }
-
-  /* ── Sistema di voto ── */
-  .vote-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-  }
-
-  .vote-label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-    text-align: center;
-    max-width: 250px;
-    margin-bottom: 15px;
-  }
-
-  .vote-buttons {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .vote-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: transform 0.15s;
-  }
-  .vote-btn:hover { transform: scale(1.1); }
-  .vote-btn:active { transform: scale(0.95); }
-  .vote-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-
-  .vote-btn svg {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    padding: 10px;
-    transition: background 0.2s;
-  }
-
-  .vote-btn.up svg {
-    fill: #4ade80;
-    background: rgba(74, 222, 128, 0.12);
-    border: 1.5px solid rgba(74, 222, 128, 0.3);
-  }
-  .vote-btn.up:hover svg { background: rgba(74, 222, 128, 0.25); }
-  .vote-btn.up.voted svg { background: rgba(74, 222, 128, 0.4); border-color: #4ade80; }
-
-  .vote-btn.down svg {
-    fill: #f87171;
-    background: rgba(248, 113, 113, 0.12);
-    border: 1.5px solid rgba(248, 113, 113, 0.3);
-  }
-  .vote-btn.down:hover svg { background: rgba(248, 113, 113, 0.25); }
-  .vote-btn.down.voted svg { background: rgba(248, 113, 113, 0.4); border-color: #f87171; }
-
-  .vote-total {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-  .vote-total-number {
-    font-size: 22px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 1px;
-    min-width: 40px;
-    text-align: center;
-    transition: transform 0.2s;
-  }
-  .vote-total-number.pop {
-    animation: votePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .vote-total-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
-  }
-
-  /* Feedback animato dopo il voto */
-  @keyframes votePop {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.35); }
-    100% { transform: scale(1); }
-  }
-  .vote-btn.pop { animation: votePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-  /* Toast notifica */
-  .toast {
-    position: fixed;
-    bottom: 32px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #222;
-    color: #fff;
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 10px 24px;
-    font-size: 13px;
-    letter-spacing: 1px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 999;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  .popup-close {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px;
-    padding: 12px 40px;
-    font-size: 14px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    margin-top: 4px;
-  }
-  .popup-close:hover { background: rgba(255,255,255,0.2); }
-  .popup-close:active { transform: scale(0.97); }
-
-  /* Indicatore connessione server */
-  .server-status {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    color: rgba(255,255,255,0.3);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .server-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #555;
-    transition: background 0.3s;
-  }
-  .server-dot.online  { background: #4ade80; }
-  .server-dot.offline { background: #f87171; }
-
-  /* ── Tasto Info ── */
-  .info-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    border: 1.5px solid rgba(255,255,255,0.2);
-    color: #fff;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, transform 0.15s;
-    z-index: 50;
-    letter-spacing: 0;
-  }
-  .info-btn:hover  { background: rgba(255,255,255,0.18); transform: scale(1.08); }
-  .info-btn:active { transform: scale(0.95); }
-
-  /* ── Popup Info ── */
-  .info-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    align-items: flex-end;
-    justify-content: flex-end;
-    padding: 70px 16px 16px;
-    pointer-events: none;
-  }
-  .info-overlay.visible {
-    display: flex;
-    pointer-events: all;
-  }
-
-  .info-card {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 16px;
-    padding: 24px 24px 24px;
-    max-width: 360px;
-    width: 100%;
-    max-height: 100%;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    animation: infoSlideIn 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.15) transparent;
-  }
-  .info-card::-webkit-scrollbar { width: 4px; }
-  .info-card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-
-  @keyframes infoSlideIn {
-    from { transform: translateY(16px) scale(0.97); opacity: 0; }
-    to   { transform: translateY(0)    scale(1);    opacity: 1; }
-  }
-
-  .info-card h2 {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 20px;
-    flex-shrink: 0;
-  }
-
-  .info-entry {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-  }
-  .info-entry:last-of-type { border-bottom: none; }
-
-  .info-entry-title {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-  }
-
-  .info-entry-text {
-    font-size: 14px;
-    color: rgba(255,255,255,0.85);
-    line-height: 1.6;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gacha</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- Indicatore server -->
 <div class="server-status">
   <div class="server-dot" id="serverDot"></div>
   <span id="serverLabel">server</span>
@@ -463,6 +16,7 @@
 
 <h1>Seppia Game</h1>
 
+<!-- Strip -->
 <div class="strip-wrapper">
   <div class="strip-mask-left"></div>
   <div class="strip-mask-right"></div>
@@ -472,6 +26,7 @@
 
 <button class="spin-btn" id="spinBtn" onclick="startSpin()">Spin the Seppia</button>
 
+<!-- Popup risultato -->
 <div class="popup-overlay" id="popup">
   <div class="popup-card">
     <div class="popup-rarity-badge" id="popupBadge"></div>
@@ -481,11 +36,10 @@
       <img class="popup-image" id="popupImg" src="" alt="risultato">
     </div>
 
-    <!-- Nome completo dal CSV -->
     <div class="popup-fullname" id="popupFullname"></div>
     <div class="popup-filename" id="popupName"></div>
 
-    <!-- Sistema di voto -->
+    <!-- Voti -->
     <div class="vote-section">
       <div class="vote-label">Questo seppia dovrebbe essere più o meno raro?</div>
       <div class="vote-buttons">
@@ -494,12 +48,10 @@
             <path d="M12 4l8 8h-5v8H9v-8H4z"/>
           </svg>
         </button>
-
         <div class="vote-total">
           <span class="vote-total-number" id="voteTotal">0</span>
           <span class="vote-total-label">voti</span>
         </div>
-
         <button class="vote-btn down" id="voteDown" onclick="castVote('giu')">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 20l-8-8h5V4h6v8h5z"/>
@@ -512,317 +64,8 @@
   </div>
 </div>
 
+<!-- Toast -->
 <div class="toast" id="toast"></div>
-
-<script>
-const RARITIES = [
-  { id: 'common',    label: 'Comune',      weight: 60, bg: '#3a3a3a', color: '#cccccc', glowColor: 'rgba(136,136,136,0.4)', badgeBg: 'rgba(80,80,80,0.8)',   badgeColor: '#ccc' },
-  { id: 'rare',      label: 'Raro',        weight: 25, bg: '#0c447c', color: '#85b7eb', glowColor: 'rgba(55,138,221,0.5)', badgeBg: 'rgba(12,68,124,0.8)',  badgeColor: '#85b7eb' },
-  { id: 'epic',      label: 'Epico',       weight: 12, bg: '#3c3489', color: '#afa9ec', glowColor: 'rgba(127,119,221,0.6)', badgeBg: 'rgba(60,52,137,0.8)', badgeColor: '#afa9ec' },
-  { id: 'legendary', label: 'Leggendario', weight: 3,  bg: '#633806', color: '#fac775', glowColor: 'rgba(239,159,39,0.7)', badgeBg: 'rgba(99,56,6,0.8)',   badgeColor: '#fac775' },
-];
-
-const STRIP_LENGTH = 40;
-const WINNER_POS   = 20;
-const SEGMENT_W    = 104;
-const SEGMENT_GAP  = 4;
-const STRIP_TOTAL  = SEGMENT_W + SEGMENT_GAP;
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFE-GZxhfiGsOfcirkjF4UKURP334ugroveTWwah1b-S2tZCIoIREkuFY82YB7BaPl/exec"
-
-let imagesData   = { common: [], rare: [], epic: [], legendary: [] };
-let csvData      = {};
-let currentFile  = null;
-// Voti già espressi in questa sessione
-function hasVotedFor(filename) {
-  return sessionStorage.getItem('vote_' + filename) !== null;
-}
-function markVoted(filename, type) {
-  sessionStorage.setItem('vote_' + filename, type);
-}
-let isSpinning   = false;
-let linesAngle   = 0;
-let linesSpeed   = 0;
-let linesRAF     = null;
-let recentImages = [];
-const MAX_RECENT = 10;
-
-// ── Indicatore server ───────────────────────────────────────────────────────
-function setServerStatus(online) {
-  const dot   = document.getElementById('serverDot');
-  const label = document.getElementById('serverLabel');
-  dot.className   = 'server-dot ' + (online ? 'online' : 'offline');
-  label.textContent = online ? 'online' : 'offline (sola lettura)';
-}
-
-// ── Toast ───────────────────────────────────────────────────────────────────
-function showToast(msg, duration = 2200) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), duration);
-}
-
-// ── Caricamento dati ────────────────────────────────────────────────────────
-async function loadImages() {
-  try {
-    const res = await fetch('images.json');
-    imagesData = await res.json();
-  } catch(e) {
-    console.warn('images.json non trovato. Uso placeholder.');
-    imagesData = { common: ['placeholder'], rare: ['placeholder'], epic: ['placeholder'], legendary: ['placeholder'] };
-  }
-}
-
-async function loadCsvData() {
-  if (!APPS_SCRIPT_URL) { setServerStatus(false); return; }
-  try {
-    const res = await fetch(APPS_SCRIPT_URL);
-    if (!res.ok) throw new Error('sheets non risponde');
-    csvData = await res.json();
-    setServerStatus(true);
-  } catch(e) {
-    csvData = {};
-    setServerStatus(false);
-  }
-}
-
-// ── Utility ─────────────────────────────────────────────────────────────────
-function getFullName(filename) {
-  return (csvData[filename] && csvData[filename].nome_completo) ? csvData[filename].nome_completo : filename;
-}
-function getVotes(filename) {
-  if (csvData[filename]) return { su: csvData[filename].voti_su || 0, giu: csvData[filename].voti_giu || 0 };
-  return { su: 0, giu: 0 };
-}
-
-function weightedRandom() {
-  const total = RARITIES.reduce((s, r) => s + r.weight, 0);
-  let rand = Math.random() * total;
-  for (const r of RARITIES) { rand -= r.weight; if (rand <= 0) return r; }
-  return RARITIES[0];
-}
-
-function buildStrip(winnerId) {
-  const track = document.getElementById('stripTrack');
-  track.innerHTML = '';
-  const totalW = RARITIES.reduce((s, r) => s + r.weight, 0);
-  const sequence = [];
-  for (let i = 0; i < STRIP_LENGTH; i++) {
-    let rand = Math.random() * totalW;
-    let chosen = RARITIES[0];
-    for (const r of RARITIES) { rand -= r.weight; if (rand <= 0) { chosen = r; break; } }
-    sequence.push(chosen);
-  }
-  sequence[WINNER_POS] = RARITIES.find(r => r.id === winnerId);
-  sequence.forEach(r => {
-    const seg = document.createElement('div');
-    seg.className = 'strip-segment';
-    seg.style.background = r.bg;
-    seg.style.color = r.color;
-    seg.textContent = r.label;
-    track.appendChild(seg);
-  });
-  return sequence;
-}
-
-function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
-
-// ── Spin ─────────────────────────────────────────────────────────────────────
-function startSpin() {
-  if (isSpinning) return;
-  const available = RARITIES.filter(r => (imagesData[r.id] || []).length > 0);
-  if (available.length === 0) {
-    alert('Nessuna immagine trovata. Controlla images.json.');
-    return;
-  }
-  let winner = weightedRandom();
-  if ((imagesData[winner.id] || []).length === 0) {
-    winner = available[Math.floor(Math.random() * available.length)];
-  }
-  isSpinning = true;
-  document.getElementById('spinBtn').disabled = true;
-  buildStrip(winner.id);
-  const track    = document.getElementById('stripTrack');
-  const wrapperW = document.querySelector('.strip-wrapper').offsetWidth;
-  const startX   = wrapperW / 2 - SEGMENT_W / 2;
-  const targetX  = startX - WINNER_POS * STRIP_TOTAL;
-  const startOffset = startX + STRIP_TOTAL * 4;
-  track.style.transform = `translateX(${startOffset}px)`;
-  const duration  = 4200;
-  const startTime = performance.now();
-  function animate(now) {
-    const t = Math.min((now - startTime) / duration, 1);
-    const currentX = startOffset + (targetX - startOffset) * easeOut(t);
-    track.style.transform = `translateX(${currentX}px)`;
-    if (t < 1) requestAnimationFrame(animate);
-    else onSpinEnd(winner);
-  }
-  requestAnimationFrame(animate);
-}
-
-// ── Fine spin → apri popup ───────────────────────────────────────────────────
-function onSpinEnd(winner) {
-  setTimeout(() => {
-    const pool = imagesData[winner.id] || [];
-    let chosen;
-    const availablePool = pool.filter(img => !recentImages.includes(img));
-    chosen = availablePool.length > 0
-      ? availablePool[Math.floor(Math.random() * availablePool.length)]
-      : pool[Math.floor(Math.random() * pool.length)];
-    recentImages.push(chosen);
-    if (recentImages.length > MAX_RECENT) recentImages.shift();
-
-    currentFile = chosen;
-
-    const imgSrc = chosen === 'placeholder'
-      ? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23222"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-size="14">placeholder</text></svg>'
-      : `images/${chosen}`;
-
-    // Sfondo e badge rarità
-    const imgWrap = document.getElementById('popupImgWrap');
-    imgWrap.style.backgroundColor = winner.bg;
-    imgWrap.style.borderColor     = winner.glowColor;
-    document.getElementById('popupBadge').textContent   = winner.label;
-    document.getElementById('popupBadge').style.background = winner.badgeBg;
-    document.getElementById('popupBadge').style.color      = winner.badgeColor;
-
-    // Nome completo e filename
-    document.getElementById('popupFullname').textContent = chosen === 'placeholder' ? '' : getFullName(chosen);
-    document.getElementById('popupName').textContent     = chosen === 'placeholder' ? '' : chosen;
-
-    // Totale voti dal CSV (locale)
-    const votes = getVotes(chosen);
-    document.getElementById('voteTotal').textContent = votes.su - votes.giu;
-
-    // Reset stato pulsanti voto (sessionStorage)
-    const btnUp   = document.getElementById('voteUp');
-    const btnDown = document.getElementById('voteDown');
-    btnUp.classList.remove('voted', 'pop');
-    btnDown.classList.remove('voted', 'pop');
-    if (hasVotedFor(chosen)) {
-      const prevVote = sessionStorage.getItem('vote_' + chosen);
-      (prevVote === 'su' ? btnUp : btnDown).classList.add('voted');
-      btnUp.disabled   = true;
-      btnDown.disabled = true;
-    } else {
-      btnUp.disabled   = false;
-      btnDown.disabled = false;
-    }
-
-    // Canvas
-    const canvas = document.getElementById('linesCanvas');
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-
-    const img = document.getElementById('popupImg');
-    img.onload = () => {
-      document.getElementById('popup').classList.add('visible');
-      startSpeedLines(winner.glowColor);
-    };
-    img.src = imgSrc;
-
-    isSpinning = false;
-    document.getElementById('spinBtn').disabled = false;
-  }, 350);
-}
-
-// ── Voto ─────────────────────────────────────────────────────────────────────
-async function castVote(type) {
-  if (!currentFile || hasVotedFor(currentFile)) return;
-
-  markVoted(currentFile, type);
-  const btnUp   = document.getElementById('voteUp');
-  const btnDown = document.getElementById('voteDown');
-  btnUp.disabled   = true;
-  btnDown.disabled = true;
-
-  const btn = type === 'su' ? btnUp : btnDown;
-  btn.classList.add('voted');
-  btn.classList.add('pop');
-  btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
-
-  // Aggiornamento ottimistico locale
-  if (!csvData[currentFile]) csvData[currentFile] = { nome_completo: currentFile, voti_su: 0, voti_giu: 0 };
-  if (type === 'su') csvData[currentFile].voti_su++;
-  else               csvData[currentFile].voti_giu++;
-  const totalEl = document.getElementById('voteTotal');
-  totalEl.textContent = csvData[currentFile].voti_su - csvData[currentFile].voti_giu;
-  totalEl.classList.remove('pop');
-  void totalEl.offsetWidth;
-  totalEl.classList.add('pop');
-  totalEl.addEventListener('animationend', () => totalEl.classList.remove('pop'), { once: true });
-
-  // Invia al server (Google Apps Script — GET per evitare CORS)
-  try {
-    const url = `${APPS_SCRIPT_URL}?filename=${encodeURIComponent(currentFile)}&type=${type}&action=vote`;
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
-    showToast(type === 'su' ? '👍 Voto positivo inviato!' : '👎 Voto negativo inviato!');
-  } catch(e) {
-    showToast('⚠️ Errore di rete — voto non salvato', 3000);
-  }
-}
-
-// ── Speed lines ──────────────────────────────────────────────────────────────
-function startSpeedLines(color) {
-  const canvas  = document.getElementById('linesCanvas');
-  const ctx     = canvas.getContext('2d');
-  const imgWrap = document.getElementById('popupImgWrap');
-  canvas.width  = imgWrap.offsetWidth;
-  canvas.height = imgWrap.offsetHeight;
-  const cx = canvas.width / 2, cy = canvas.height / 2;
-  const NUM_LINES = 70;
-  const MIN_R = 100;
-  const MAX_R = Math.max(canvas.width, canvas.height) * 0.8;
-  linesAngle = 0; linesSpeed = 0.2;
-  const angles = Array.from({ length: NUM_LINES }, (_, i) => (i / NUM_LINES) * Math.PI * 2);
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = color.replace('0.7','0.15').replace('0.6','0.1').replace('0.5','0.08').replace('0.4','0.05');
-    ctx.beginPath(); ctx.arc(cx, cy, MAX_R, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(linesAngle);
-    angles.forEach(a => {
-      const spread = (Math.PI * 2) / NUM_LINES * 0.4;
-      ctx.beginPath();
-      ctx.moveTo(Math.cos(a - spread) * MIN_R, Math.sin(a - spread) * MIN_R);
-      ctx.lineTo(Math.cos(a + spread) * MIN_R, Math.sin(a + spread) * MIN_R);
-      ctx.lineTo(Math.cos(a + spread) * MAX_R, Math.sin(a + spread) * MAX_R);
-      ctx.lineTo(Math.cos(a - spread) * MAX_R, Math.sin(a - spread) * MAX_R);
-      ctx.closePath();
-      ctx.fillStyle = color; ctx.fill();
-    });
-    ctx.restore();
-    linesAngle += linesSpeed;
-    linesSpeed   = Math.max(0.002, linesSpeed * 0.98);
-    linesRAF = requestAnimationFrame(draw);
-  }
-  if (linesRAF) cancelAnimationFrame(linesRAF);
-  draw();
-}
-
-function closePopup() {
-  document.getElementById('popup').classList.remove('visible');
-  if (linesRAF) { cancelAnimationFrame(linesRAF); linesRAF = null; }
-  const canvas = document.getElementById('linesCanvas');
-  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-  document.getElementById('popupImg').src = '';
-  currentFile = null;
-}
-
-
-// ── Info popup ────────────────────────────────────────────────
-function openInfo() {
-  document.getElementById('infoOverlay').classList.add('visible');
-}
-function closeInfo() {
-  document.getElementById('infoOverlay').classList.remove('visible');
-}
-function closeInfoOnBg(e) {
-  if (e.target === document.getElementById('infoOverlay')) closeInfo();
-}
-
-// ── Init ─────────────────────────────────────────────────────────────────────
-Promise.all([loadImages(), loadCsvData()]);
-</script>
 
 <!-- Tasto Info -->
 <button class="info-btn" onclick="openInfo()">i</button>
@@ -832,6 +75,8 @@ Promise.all([loadImages(), loadCsvData()]);
   <div class="info-card" id="infoCard">
     <h2>Info</h2>
 
+    <!-- ✏️ Aggiungi o modifica le voci qui sotto -->
+
     <div class="info-entry">
       <span class="info-entry-title">Cos'è Seppia Game?</span>
       <span class="info-entry-text">Un Gacha game dedicato a Seppia, il mio gatto. In questi anni ho creato tanti (troppi) sticker di Seppia che fa cose ed ho deciso di condividerli col mondo.</span>
@@ -839,26 +84,35 @@ Promise.all([loadImages(), loadCsvData()]);
 
     <div class="info-entry">
       <span class="info-entry-title">Come funzionano i voti?</span>
-      <span class="info-entry-text">Puoi votare con le frecce se pensi che un Seppia debba essere più o meno 
-        raro; nel momento in cui un Seppia raggiunge 5 voti (positivi o negativi) prenderò in considerazione di 
+      <span class="info-entry-text">Puoi votare con le frecce se pensi che un Seppia debba essere più o meno
+        raro; nel momento in cui un Seppia raggiunge 5 voti (positivi o negativi) prenderò in considerazione di
         cambiarlo di rarità (su o giù), arrivato a 10 (o -10) potrò solo piegarmi al volere del popolo.
-        <br><br><b>Se un Seppia è già Comune, non potrà scendere oltre. Così come un Leggendario non potrà 
+        <br><br><b>Se un Seppia è già Comune, non potrà scendere oltre. Così come un Leggendario non potrà
         salire oltre.</b></span>
     </div>
 
     <div class="info-entry">
       <span class="info-entry-title">Le rarità</span>
       <span class="info-entry-text">
-          · <b>Comune 60%</b> - <i>15 voti necessari per cambio di rarità</i> <br>
-          · <b>Raro 25%</b> - <i>10 voti necessari per cambio di rarità</i> <br>
-          · <b>Epico 12%</b> - <i>8 voti necessari per cambio di rarità</i> <br>
-          · <b>Leggendario 3%</b> - <i> 5 voti necessari per cambio di rarità</i></span>
+        · Comune 60% - 15 voti necessari per cambio di rarità<br>
+        · Raro 25% - 10 voti necessari per cambio di rarità<br>
+        · Epico 12% - 8 voti necessari per cambio di rarità<br>
+        · Leggendario 3% - 5 voti necessari per cambio di rarità
+      </span>
     </div>
 
     <div class="info-entry">
       <span class="info-entry-title">BUONA FORTUNA!</span>
     </div>
+
+    <!-- ✏️ Copia e incolla un blocco .info-entry per aggiungerne altri -->
+
   </div>
 </div>
+
+<!-- Scripts: constants prima, poi script -->
+<script src="constants.js"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
