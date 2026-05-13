@@ -266,3 +266,13 @@ function closeInfoOnBg(e) {
 
 // ── Init ──────────────────────────────────────────────────────
 Promise.all([loadImages(), loadCsvData()]);
+
+// ── Scorciatoia tastiera ──────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space') return;
+  e.preventDefault(); // evita scroll della pagina
+
+  const popupVisible = document.getElementById('popup').classList.contains('visible');
+  if (popupVisible) closePopup();
+  else startSpin();
+});
