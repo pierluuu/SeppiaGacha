@@ -11,6 +11,7 @@ let linesAngle   = 0;
 let linesSpeed   = 0;
 let linesRAF     = null;
 let recentImages = [];
+let currentDayFile = null; // Memorizza il filename del seppia del giorno
 
 // ── Session storage voti ──────────────────────────────────────
 function hasVotedFor(filename) {
@@ -59,6 +60,94 @@ async function loadCsvData() {
   }
 }
 
+// ── Seppia of the Day Logica ──────────────────────────────────
+async function loadSeppiaOfTheDay() {
+  const dayBtn = document.getElementById('seppiaDayBtn');
+
+  // Mostra subito il bottone disabilitato
+  dayBtn.textContent = 'Caricamento...';
+  dayBtn.disabled = true;
+
+  if (!APPS_SCRIPT_URL) return;
+  try {
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=get_day`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (data && data.success) {
+      currentDayFile = data.seppia.filename;
+
+      // Popola il popup
+      document.getElementById('seppiaDayImg').src = `images/${data.seppia.filename}`;
+      document.getElementById('seppiaDayFullname').textContent = data.seppia.nome_completo;
+      document.getElementById('seppiaDayName').textContent = data.seppia.filename;
+      document.getElementById('seppiaDayVotes').textContent = data.seppia.voti_day;
+
+      // Controlla se ha già votato oggi
+      const voteKey = `voted_day_${data.date}_${currentDayFile}`;
+      const btn = document.getElementById('seppiaDayVoteBtn');
+      if (localStorage.getItem(voteKey)) {
+        btn.classList.add('voted');
+        btn.disabled = true;
+      } else {
+        btn.classList.remove('voted');
+        btn.disabled = false;
+      }
+
+      // Abilita il bottone con il testo definitivo
+      dayBtn.textContent = '✦ Seppia of the Day';
+      dayBtn.disabled = false;
+    }
+  } catch(e) {
+    dayBtn.textContent = 'Non disponibile';
+    console.error("Impossibile caricare il Seppia of the Day.", e);
+  }
+}
+
+// Funzioni apertura/chiusura popup dedicato
+function openDayPopup() {
+  document.getElementById('popupDay').classList.add('visible');
+}
+
+function closeDayPopup() {
+  document.getElementById('popupDay').classList.remove('visible');
+}
+
+function closeDayPopupOnBg(e) {
+  if (e.target === document.getElementById('popupDay')) closeDayPopup();
+}
+
+async function voteSeppiaDay() {
+  if (!currentDayFile) return;
+  const btn = document.getElementById('seppiaDayVoteBtn');
+  if (btn.disabled) return;
+
+  btn.disabled = true;
+  btn.classList.add('voted', 'pop');
+  btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
+
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'vote_day', filename: currentDayFile })
+    });
+    const result = await response.json();
+    
+    if (result && result.success) {
+      document.getElementById('seppiaDayVotes').textContent = result.voti_day;
+      
+      const todayStr = new Date().toISOString().split('T')[0]; 
+      localStorage.setItem(`voted_day_${todayStr}_${currentDayFile}`, 'true');
+      showToast('❤️ Hai dato il tuo Mi Piace al Seppia del Giorno!');
+    } else {
+      throw new Error();
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.classList.remove('voted');
+    showToast('⚠️ Errore di rete — mi piace non salvato', 3000);
+  }
+}
+
 // ── Utility ───────────────────────────────────────────────────
 function getFullName(filename) {
   return (csvData[filename]?.nome_completo) || filename;
@@ -101,7 +190,7 @@ function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 function startSpin() {
   if (isSpinning) return;
   const available = RARITIES.filter(r => (imagesData[r.id] || []).length > 0);
-  if (!available.length) { alert('Nessuna immagine trovata. Controlla images.json.'); return; }
+  if (!available.length) { alert('Nessuna immagine trouvata. Controlla images.json.'); return; }
 
   let winner = weightedRandom();
   if (!(imagesData[winner.id] || []).length) winner = available[Math.floor(Math.random() * available.length)];
@@ -265,7 +354,8 @@ function closeInfoOnBg(e) {
 }
 
 // ── Init ──────────────────────────────────────────────────────
-Promise.all([loadImages(), loadCsvData()]);
+// Carichiamo le immagini locali, i dati generali CSV e proviamo SUBITO a mostrare il Seppia del Giorno
+Promise.all([loadImages(), loadCsvData(), loadSeppiaOfTheDay()]);
 
 // ── Scorciatoia tastiera ──────────────────────────────────────
 document.addEventListener('keydown', (e) => {

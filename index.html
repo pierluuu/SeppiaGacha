@@ -8,15 +8,17 @@
 </head>
 <body>
 
-<!-- Indicatore server -->
 <div class="server-status">
   <div class="server-dot" id="serverDot"></div>
   <span id="serverLabel">server</span>
 </div>
 
+<button class="seppia-day-trigger" id="seppiaDayBtn" disabled onclick="openDayPopup()">
+  Caricamento...
+</button>
+
 <h1>Seppia Game</h1>
 
-<!-- Strip -->
 <div class="strip-wrapper">
   <div class="strip-mask-left"></div>
   <div class="strip-mask-right"></div>
@@ -26,7 +28,6 @@
 
 <button class="spin-btn" id="spinBtn" onclick="startSpin()">Spin the Seppia</button>
 
-<!-- Popup risultato -->
 <div class="popup-overlay" id="popup">
   <div class="popup-card">
     <div class="popup-rarity-badge" id="popupBadge"></div>
@@ -39,7 +40,6 @@
     <div class="popup-fullname" id="popupFullname"></div>
     <div class="popup-filename" id="popupName"></div>
 
-    <!-- Voti -->
     <div class="vote-section">
       <div class="vote-label">Questo seppia dovrebbe essere più o meno raro?</div>
       <div class="vote-buttons">
@@ -64,18 +64,37 @@
   </div>
 </div>
 
-<!-- Toast -->
+<div class="popup-overlay" id="popupDay" onclick="closeDayPopupOnBg(event)">
+  <div class="popup-card day-card">
+    <div class="popup-rarity-badge day-badge">Seppia of the Day</div>
+    
+    <div class="popup-image-wrap" id="popupDayImgWrap">
+      <img class="popup-image" id="seppiaDayImg" src="" alt="Seppia del Giorno">
+    </div>
+
+    <div class="popup-fullname" id="seppiaDayFullname">Caricamento...</div>
+    <div class="popup-filename" id="seppiaDayName"></div>
+
+    <div class="seppia-day-vote-section">
+      <button class="seppia-day-vote-btn" id="seppiaDayVoteBtn" onclick="voteSeppiaDay()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
+      <span class="seppia-day-counter" id="seppiaDayVotes">0</span>
+    </div>
+
+    <button class="popup-close" onclick="closeDayPopup()">Chiudi</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<!-- Tasto Info -->
 <button class="info-btn" onclick="openInfo()">i</button>
 
-<!-- Popup Info -->
 <div class="info-overlay" id="infoOverlay" onclick="closeInfoOnBg(event)">
   <div class="info-card" id="infoCard">
     <h2>Info</h2>
-
-    <!-- ✏️ Aggiungi o modifica le voci qui sotto -->
 
     <div class="info-entry">
       <span class="info-entry-title">Cos'è Seppia Game?</span>
@@ -105,12 +124,9 @@
       <span class="info-entry-title">BUONA FORTUNA!</span>
     </div>
 
-    <!-- ✏️ Copia e incolla un blocco .info-entry per aggiungerne altri -->
-
   </div>
 </div>
 
-<!-- Scripts: constants prima, poi script -->
 <script src="constants.js"></script>
 <script src="script.js"></script>
 
